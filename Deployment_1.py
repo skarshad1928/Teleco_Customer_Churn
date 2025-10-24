@@ -15,20 +15,17 @@ from sklearn.preprocessing import StandardScaler
 import joblib
 
 warnings.filterwarnings("ignore")
-
 st.set_page_config(page_title="Customer Churn Analysis", layout="wide")
 
 page = st.sidebar.selectbox("Select Section", [
-    "Project Overview", "Data Exploration", "Model Training", "Make a Prediction", "Business Insights", "Summarization"
+    "Project Overview", "Data Exploration", "Model Training",
+    "Make a Prediction", "Customer Churn Analysis", "Summarization"
 ])
 
-# PROJECT OVERVIEW
 if page == "Project Overview":
     st.title("Customer Churn Analysis - Telecom Sector")
-
     st.subheader("Objective")
     st.write("The aim of this project is to predict customer churn — identifying customers who are likely to leave the telecom service.")
-
     st.subheader("Project Workflow")
     st.markdown("""
     1. Data Exploration  
@@ -39,32 +36,25 @@ if page == "Project Overview":
     6. Summarization
     """)
 
-# DATA EXPLORATION
 elif page == "Data Exploration":
     st.title("Data Exploration")
-
     df = pd.read_excel("Telco_customer_churn.xlsx")
     st.write("First 5 Rows:")
     st.write(df.head())
-
     st.write("Column Names and Data Types:")
     st.write(pd.DataFrame({
         "Column": df.columns,
         "Data Type": df.dtypes.astype(str),
         "Null Values": df.isnull().sum().values
     }))
-
     numeric_df = df.select_dtypes(include=[np.number])
     if not numeric_df.empty:
         st.write("Correlation Matrix:")
         st.write(numeric_df.corr())
-
-        st.write("Heatmap of Correlations:")
         plt.figure(figsize=(10, 6))
         sns.heatmap(numeric_df.corr(), annot=True, cmap="RdBu", center=0)
         st.pyplot(plt.gcf())
 
-# MODEL TRAINING
 elif page == "Model Training":
     st.title("Model Training - Logistic Regression")
 
@@ -115,7 +105,6 @@ elif page == "Model Training":
         y = df_selected["Churn Label"]
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True)
-
         scaler = StandardScaler()
         X_train_scaled = scaler.fit_transform(X_train)
         X_test_scaled = scaler.transform(X_test)
@@ -145,10 +134,8 @@ elif page == "Model Training":
         st.write(f"F1 Score: {f1:.4f}")
         st.write(f"AUC Score: {auc:.4f}")
         st.write(f"Optimal Threshold (Youden's J): {best_thresh:.4f}")
-
         st.write("Classification Report:")
         st.text(classification_report(y_test, y_pred_opt))
-
         st.write("Confusion Matrix:")
         st.write(confusion_matrix(y_test, y_pred_opt))
 
@@ -165,7 +152,6 @@ elif page == "Model Training":
         joblib.dump(scaler, "scaler.pkl")
         st.success("Model and Scaler saved successfully.")
 
-# MAKE A PREDICTION
 elif page == "Make a Prediction":
     st.title("Make a Prediction")
 
@@ -241,7 +227,7 @@ elif page == "Make a Prediction":
         X_new = pd.DataFrame([inputs])
         try:
             X_new_scaled = scaler.transform(X_new)
-        except Exception as e:
+        except Exception:
             st.error("Error scaling input features. Ensure mappings match model training.")
             st.stop()
 
@@ -255,12 +241,16 @@ elif page == "Make a Prediction":
         else:
             st.write("The customer is NOT likely to churn.")
 
-# BUSINESS INSIGHTS
-elif page == "Business Insights":
-    st.title("Business Insights")
-    st.write("Section under development.")
+elif page == "Customer Churn Analysis":
+    st.title("Customer Churn Analysis Dashboard")
+    report_url = "https://app.powerbi.com/reportEmbed?reportId=2645a142-ecba-422a-9089-842afe1a29ee&autoAuth=true"
+    st.components.v1.iframe(report_url, width=1200, height=800)
 
-# SUMMARIZATION
 elif page == "Summarization":
-    st.title("Summarization")
-    st.write("Section under development.")
+    st.title("Summarization of Findings")
+    st.markdown("""
+    - High churn among month-to-month customers.  
+    - Senior citizens and customers with short tenure churn more.  
+    - Customers without tech support or online security are high-risk.  
+    - Electronic check users churn more than auto-pay customers.
+    """)
