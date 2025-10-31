@@ -249,22 +249,16 @@ elif page == "Customer Churn Analysis":
 elif page == "Summarization":
     st.title("Summarization of Findings")
     st.markdown("""
-    The analysis reveals key insights into customer churn behavior:
+   The Telecom Customer Churn Analysis reveals important insights into customer behavior. A large proportion of churned customers are non–senior citizens, indicating that younger customers tend to switch service providers more frequently. Around 32% of churned customers did not have partners, suggesting that single customers may be less committed or more open to exploring alternatives. Lack of technical support emerged as one of the major factors influencing churn, as customers without proper assistance are more likely to discontinue services. Interestingly, most churned customers had fibre optic connections rather than DSL, showing that even advanced infrastructure does not guarantee satisfaction. Across all segments, three major churn reasons were identified — behavior-related issues such as reduced engagement or irregular payments, ineffective customer support experiences, and competitors offering higher download speeds. Overall, the findings suggest that improving customer support quality, maintaining competitive service speeds, and designing targeted retention strategies for non-senior and single customers could significantly reduce churn and enhance long-term loyalty.
 
-A large proportion of churned customers are non–senior citizens, indicating that younger customers tend to switch service providers more frequently.
+Based on these insights, the following key decisions were taken:
 
-Around 32% of churned customers did not have partners, suggesting that single customers may be less committed or more likely to explore other options.
+Strengthen technical support and ensure faster issue resolution.
 
-Lack of technical support was one of the major factors influencing customer churn. Customers without proper tech support are more likely to leave.
+Introduce loyalty and engagement programs targeted at younger and single customers.
 
-Across all segments, three primary reasons for churn stand out:
+Benchmark and upgrade network speed to remain competitive in the market.
 
-Behavior-related issues (such as reduced engagement or irregular payments)
-
-Ineffective customer support experience
-
-Competitors offering higher download speeds
-
-Overall, these findings highlight that improving customer support quality, offering competitive service speeds, and designing targeted retention programs for non-senior, single customers could significantly reduce churn rates and increase long-term customer loyalty.
+Conduct regular feedback surveys to monitor customer satisfaction and prevent potential churn.
     """
         )
