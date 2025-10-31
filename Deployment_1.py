@@ -249,8 +249,22 @@ elif page == "Customer Churn Analysis":
 elif page == "Summarization":
     st.title("Summarization of Findings")
     st.markdown("""
-    - High churn among month-to-month customers.  
-    - Senior citizens and customers with short tenure churn more.  
-    - Customers without tech support or online security are high-risk.  
-    - Electronic check users churn more than auto-pay customers.
-    """)
+    The analysis reveals key insights into customer churn behavior:
+
+A large proportion of churned customers are non–senior citizens, indicating that younger customers tend to switch service providers more frequently.
+
+Around 32% of churned customers did not have partners, suggesting that single customers may be less committed or more likely to explore other options.
+
+Lack of technical support was one of the major factors influencing customer churn. Customers without proper tech support are more likely to leave.
+
+Across all segments, three primary reasons for churn stand out:
+
+Behavior-related issues (such as reduced engagement or irregular payments)
+
+Ineffective customer support experience
+
+Competitors offering higher download speeds
+
+Overall, these findings highlight that improving customer support quality, offering competitive service speeds, and designing targeted retention programs for non-senior, single customers could significantly reduce churn rates and increase long-term customer loyalty.
+    """
+        )
