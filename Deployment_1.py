@@ -148,6 +148,15 @@ elif page == "Model Training":
         plt.legend()
         st.pyplot(plt.gcf())
 
+        st.subheader("Model Logistic Regression Equation (Z Equation)")
+        st.markdown("""
+        **Z = -1.7940 - 0.0213 × Gender + 0.0721 × Senior Citizen + 0.1387 × Partner - 0.6503 × Dependents  
+        - 1.0726 × Tenure Months - 0.2304 × Phone Service + 0.3679 × Multiple Lines  
+        - 0.2985 × Internet Service - 0.0778 × Online Security + 0.1565 × Online Backup  
+        + 0.2707 × Device Protection - 0.0640 × Tech Support + 0.5191 × Streaming TV  
+        - 0.7533 × Contract + 0.2409 × Paperless Billing + 0.0453 × Payment Method + 0.0072 × CLTV**
+        """)
+
         joblib.dump(model, "best_logistic_model.pkl")
         joblib.dump(scaler, "scaler.pkl")
         st.success("Model and Scaler saved successfully.")
@@ -261,4 +270,14 @@ Benchmark and upgrade network speed to remain competitive in the market.
 
 Conduct regular feedback surveys to monitor customer satisfaction and prevent potential churn.
     """)
+
+    st.markdown("### Logistic Regression Equation Used for Prediction:")
+    st.markdown("""
+    **Z = -1.7940 - 0.0213 × Gender + 0.0721 × Senior Citizen + 0.1387 × Partner - 0.6503 × Dependents  
+    - 1.0726 × Tenure Months - 0.2304 × Phone Service + 0.3679 × Multiple Lines  
+    - 0.2985 × Internet Service - 0.0778 × Online Security + 0.1565 × Online Backup  
+    + 0.2707 × Device Protection - 0.0640 × Tech Support + 0.5191 × Streaming TV  
+    - 0.7533 × Contract + 0.2409 × Paperless Billing + 0.0453 × Payment Method + 0.0072 × CLTV**
+    """)
+
     st.markdown("**Resources:** [GitHub Repository](https://github.com/skarshad1928/Python/tree/main/NSDC%20INTERNSHIP)")
