@@ -256,22 +256,19 @@ elif page == "Customer Churn Analysis":
     st.components.v1.iframe(report_url, width=1200, height=800)
 
 elif page == "Summarization":
-    st.title("Summarization of Findings")
+    st.title("📊 Summarization of Findings")
+
     st.markdown("""
-   The Telecom Customer Churn Analysis reveals important insights into customer behavior. A large proportion of churned customers are non–senior citizens, indicating that younger customers tend to switch service providers more frequently. Around 32% of churned customers did not have partners, suggesting that single customers may be less committed or more open to exploring alternatives. Lack of technical support emerged as one of the major factors influencing churn, as customers without proper assistance are more likely to discontinue services. Interestingly, most churned customers had fibre optic connections rather than DSL, showing that even advanced infrastructure does not guarantee satisfaction. Across all segments, three major churn reasons were identified — behavior-related issues such as reduced engagement or irregular payments, ineffective customer support experiences, and competitors offering higher download speeds. Overall, the findings suggest that improving customer support quality, maintaining competitive service speeds, and designing targeted retention strategies for non-senior and single customers could significantly reduce churn and enhance long-term loyalty.
-
-Based on these insights, the following key decisions were taken:
-
-Strengthen technical support and ensure faster issue resolution.
-
-Introduce loyalty and engagement programs targeted at younger and single customers.
-
-Benchmark and upgrade network speed to remain competitive in the market.
-
-Conduct regular feedback surveys to monitor customer satisfaction and prevent potential churn.
+    The Telecom Customer Churn Analysis provides a comprehensive understanding of the behavioral and service-related trends driving customer attrition. 
+    Findings reveal that a majority of churned customers are non-senior citizens, indicating that younger individuals tend to experiment with new service providers and exhibit less brand loyalty. 
+    Approximately one-third of churned customers were single or without dependents, reflecting a lower emotional or financial commitment toward long-term service contracts. 
+    Interestingly, customers using fibre optic connections reported higher churn than DSL users, suggesting that superior technology alone cannot ensure satisfaction without consistent service quality. 
+    Lack of technical support, poor online security, and absence of reliable backup options were among the strongest churn triggers identified. 
+    The analysis concludes that customer engagement, proactive communication, and fast problem resolution are critical to retention. 
+    Strengthening customer care, designing loyalty benefits for younger and single customers, and benchmarking network speed and reliability can substantially improve customer trust and reduce churn rates over time.
     """)
 
-    st.markdown("### Logistic Regression Equation Used for Prediction:")
+    st.markdown("### 🧮 Logistic Regression Equation Used for Prediction:")
     st.markdown("""
     **Z = -1.7940 - 0.0213 × Gender + 0.0721 × Senior Citizen + 0.1387 × Partner - 0.6503 × Dependents  
     - 1.0726 × Tenure Months - 0.2304 × Phone Service + 0.3679 × Multiple Lines  
@@ -280,4 +277,12 @@ Conduct regular feedback surveys to monitor customer satisfaction and prevent po
     - 0.7533 × Contract + 0.2409 × Paperless Billing + 0.0453 × Payment Method + 0.0072 × CLTV**
     """)
 
+    st.markdown("### 📈 Churn Rate Summary Table")
+    if 'churn_summary_df' in locals():
+        st.dataframe(churn_summary_df)
+        st.bar_chart(churn_summary_df.set_index('Feature Condition')['Churn Rate (%)'])
+    else:
+        st.warning("⚠️ Please first run the 'Churn Rate Summary' page to generate results.")
+
     st.markdown("**Resources:** [GitHub Repository](https://github.com/skarshad1928/Python/tree/main/NSDC%20INTERNSHIP)")
+
