@@ -256,33 +256,90 @@ elif page == "Customer Churn Analysis":
     st.components.v1.iframe(report_url, width=1200, height=800)
 
 elif page == "Summarization":
-    st.title("📊 Summarization of Findings")
+    st.title("Summarization of Findings")
 
     st.markdown("""
-    The Telecom Customer Churn Analysis provides a comprehensive understanding of the behavioral and service-related trends driving customer attrition. 
-    Findings reveal that a majority of churned customers are non-senior citizens, indicating that younger individuals tend to experiment with new service providers and exhibit less brand loyalty. 
-    Approximately one-third of churned customers were single or without dependents, reflecting a lower emotional or financial commitment toward long-term service contracts. 
-    Interestingly, customers using fibre optic connections reported higher churn than DSL users, suggesting that superior technology alone cannot ensure satisfaction without consistent service quality. 
-    Lack of technical support, poor online security, and absence of reliable backup options were among the strongest churn triggers identified. 
-    The analysis concludes that customer engagement, proactive communication, and fast problem resolution are critical to retention. 
-    Strengthening customer care, designing loyalty benefits for younger and single customers, and benchmarking network speed and reliability can substantially improve customer trust and reduce churn rates over time.
+    The Telecom Customer Churn Analysis provides a comprehensive understanding of behavioral, contractual, and service-related patterns 
+    influencing customer attrition. Results show that the majority of churned users are younger, non-senior citizens, indicating a 
+    higher tendency toward switching and less long-term commitment. About one-third of churned customers were single or without dependents, 
+    reflecting reduced loyalty and a lower threshold for dissatisfaction. Customers using fibre optic services churned more than DSL users, 
+    proving that superior infrastructure alone does not ensure satisfaction without strong customer care. Lack of technical support, 
+    missing online security, and absence of reliable device protection emerged as leading churn drivers. These insights emphasize that 
+    strengthening customer support, improving engagement programs for younger users, ensuring reliable network uptime, and enhancing 
+    value-added services can significantly reduce churn. In summary, data-driven retention initiatives can transform reactive management 
+    into proactive customer loyalty strategies for telecom firms.
     """)
 
-    st.markdown("### 🧮 Logistic Regression Equation Used for Prediction:")
+    st.markdown("### Logistic Regression Equation Used for Prediction:")
     st.markdown("""
-    **Z = -1.7940 - 0.0213 × Gender + 0.0721 × Senior Citizen + 0.1387 × Partner - 0.6503 × Dependents  
+    Z = -1.7940 - 0.0213 × Gender + 0.0721 × Senior Citizen + 0.1387 × Partner - 0.6503 × Dependents  
     - 1.0726 × Tenure Months - 0.2304 × Phone Service + 0.3679 × Multiple Lines  
     - 0.2985 × Internet Service - 0.0778 × Online Security + 0.1565 × Online Backup  
     + 0.2707 × Device Protection - 0.0640 × Tech Support + 0.5191 × Streaming TV  
-    - 0.7533 × Contract + 0.2409 × Paperless Billing + 0.0453 × Payment Method + 0.0072 × CLTV**
+    - 0.7533 × Contract + 0.2409 × Paperless Billing + 0.0453 × Payment Method + 0.0072 × CLTV
     """)
 
-    st.markdown("### 📈 Churn Rate Summary Table")
-    if 'churn_summary_df' in locals():
-        st.dataframe(churn_summary_df)
+    # Display Churn Summary Table
+    try:
+        import pandas as pd
+
+        df = pd.read_excel("Telco_customer_churn.xlsx")
+        churn_col = 'Churn Value'
+
+        # Feature conditions for summary
+        conditions = {
+            'Senior Citizen == No': df['Senior Citizen'] == 'No',
+            'Partner == No': df['Partner'] == 'No',
+            'Dependents == No': df['Dependents'] == 'No',
+            'Phone Service == Yes': df['Phone Service'] == 'Yes',
+            'Multiple Lines == No': df['Multiple Lines'] == 'No',
+            'Internet Service == Fiber optic': df['Internet Service'] == 'Fiber optic',
+            'Online Security == No': df['Online Security'] == 'No',
+            'Online Backup == No': df['Online Backup'] == 'No',
+            'Device Protection == No': df['Device Protection'] == 'No',
+            'Tech Support == No': df['Tech Support'] == 'No',
+            'Streaming TV == No': df['Streaming TV'] == 'No',
+            'Contract == Month-to-month': df['Contract'] == 'Month-to-month',
+            'Paperless Billing == Yes': df['Paperless Billing'] == 'Yes'
+        }
+
+        summary = []
+        for label, condition in conditions.items():
+            total = int(condition.sum())
+            churned = int(df.loc[condition, churn_col].sum())
+            churn_rate = (churned / total * 100) if total > 0 else 0
+            summary.append({
+                'Feature Condition': label,
+                'Total Customers': total,
+                'Churned Customers': churned,
+                'Churn Rate (%)': round(churn_rate, 2)
+            })
+
+        churn_summary_df = pd.DataFrame(summary)
+
+        st.markdown("### Churn Rate Summary Table (Feature-wise)")
+        st.dataframe(churn_summary_df, use_container_width=True)
+
+        # Bar Chart Visualization
         st.bar_chart(churn_summary_df.set_index('Feature Condition')['Churn Rate (%)'])
-    else:
-        st.warning("⚠️ Please first run the 'Churn Rate Summary' page to generate results.")
+
+        # Combined Condition Analysis
+        combined_condition = pd.Series(True, index=df.index)
+        for cond in conditions.values():
+            combined_condition &= cond
+
+        total_combined = int(combined_condition.sum())
+        churned_combined = int(df.loc[combined_condition, churn_col].sum())
+        churn_rate_combined = (churned_combined / total_combined * 100) if total_combined > 0 else 0
+
+        st.markdown(f"""
+        #### Combined Condition Summary (All Selected Features)
+        - Total Customers: {total_combined}  
+        - Churned Customers: {churned_combined}  
+        - Churn Rate: {round(churn_rate_combined, 2)}%
+        """)
+
+    except Exception as e:
+        st.error(f"Error displaying churn summary table: {e}")
 
     st.markdown("**Resources:** [GitHub Repository](https://github.com/skarshad1928/Python/tree/main/NSDC%20INTERNSHIP)")
-
