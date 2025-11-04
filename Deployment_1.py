@@ -260,5 +260,5 @@ Introduce loyalty and engagement programs targeted at younger and single custome
 Benchmark and upgrade network speed to remain competitive in the market.
 
 Conduct regular feedback surveys to monitor customer satisfaction and prevent potential churn.
-    """
-        )
+    """)
+    st.markdown("**Resources:** [GitHub Repository](https://github.com/skarshad1928/Python/tree/main/NSDC%20INTERNSHIP)")
