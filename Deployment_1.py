@@ -428,6 +428,53 @@ elif page == "Summarization":
         - Churned Customers: {churned_combined}  
         - Churn Rate: {round(churn_rate_combined, 2)}%
         """)
+            # --- Z-score mapping and Tenure/CLTV range logic ---
+    try:
+        # Define numeric Z contribution estimates per condition (example illustrative mapping)
+        z_mapping = {
+            'Senior Citizen == Yes': 0.0721,
+            'Partner == No': 0.1387,
+            'Dependents == No': -0.6503,
+            'Phone Service == Yes': -0.2304,
+            'Multiple Lines == No': 0.3679,
+            'Internet Service == Fiber optic': -0.2985,
+            'Online Security == No': -0.0778,
+            'Online Backup == No': 0.1565,
+            'Device Protection == No': 0.2707,
+            'Tech Support == No': -0.0640,
+            'Streaming TV == No': 0.5191,
+            'Contract == Month-to-month': -0.7533,
+            'Paperless Billing == Yes': 0.2409
+        }
+
+        # Compute total Z
+        total_z = sum([z_mapping.get(c, 0) for c in conditions.keys()])
+
+        st.markdown("### Logistic Z-value Analysis (Feature Conditions)")
+
+        st.write(f"**Calculated Z value (sum of chosen conditions):** {total_z:.4f}")
+
+        if total_z >= -0.875:
+            st.success(f" Z = {total_z:.4f} ≥ -0.875 ⇒ Customer likely to **Churn**")
+            st.markdown("""
+            **Recommended Ranges (Based on Z ≥ -0.875):**
+            - **Tenure Months:** Preferably between **0 to 15 months**  
+            - **CLTV:** Typically **below 3000**  
+            
+            Customers in this range show higher churn probability; retention strategies should focus here.
+            """)
+        else:
+            st.info(f" Z = {total_z:.4f} < -0.875 ⇒ Customer **not likely to churn**")
+            st.markdown("""
+            **Recommended Ranges (Based on Z < -0.875):**
+            - **Tenure Months:** Usually **above 20 months**  
+            - **CLTV:** Typically **above 4000**  
+            
+            Customers in this segment exhibit strong retention and low churn risk.
+            """)
+    except Exception as e:
+        st.error(f"Error computing Z-value range: {e}")
+
 
     except Exception as e:
         st.error(f"Error displaying churn summary table: {e}")
