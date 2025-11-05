@@ -137,7 +137,9 @@ elif page == "Model Training":
         X = df_selected.drop("Churn Label", axis=1)
         y = df_selected["Churn Label"]
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, shuffle=True)
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.3, random_state=42, shuffle=True
+        )
         scaler = StandardScaler()
         X_train_scaled = scaler.fit_transform(X_train)
         X_test_scaled = scaler.transform(X_test)
@@ -151,6 +153,16 @@ elif page == "Model Training":
         )
         model.fit(X_train_scaled, y_train)
 
+        from sklearn.model_selection import cross_val_score, StratifiedKFold
+
+        cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        acc_scores = cross_val_score(model, X_train_scaled, y_train, cv=cv, scoring='accuracy')
+        f1_scores = cross_val_score(model, X_train_scaled, y_train, cv=cv, scoring='f1')
+
+        st.subheader("Cross-Validation Results (5-Fold)")
+        st.write(f"Accuracy: Mean = {acc_scores.mean():.4f}, Std = {acc_scores.std():.4f}")
+        st.write(f"F1 Score: Mean = {f1_scores.mean():.4f}, Std = {f1_scores.std():.4f}")
+
         y_pred_proba = model.predict_proba(X_test_scaled)[:, 1]
         fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
         J = tpr - fpr
@@ -162,12 +174,12 @@ elif page == "Model Training":
         f1 = f1_score(y_test, y_pred_opt)
         auc = roc_auc_score(y_test, y_pred_proba)
 
-        st.subheader("Model Evaluation")
+        st.subheader("Model Evaluation on Test Set")
         st.write(f"Accuracy: {acc:.4f}")
         st.write(f"F1 Score: {f1:.4f}")
         st.write(f"AUC Score: {auc:.4f}")
         st.write(f"Optimal Threshold (Youden's J): {best_thresh:.4f}")
-        st.write("Classification Report:")
+        st.text("Classification Report:")
         st.text(classification_report(y_test, y_pred_opt))
         st.write("Confusion Matrix:")
         st.write(confusion_matrix(y_test, y_pred_opt))
@@ -183,19 +195,19 @@ elif page == "Model Training":
 
         st.subheader("Model Logistic Regression Equation (Z Equation)")
         st.markdown("""
-        **Z = -1.7940 - 0.0213 × Gender + 0.0721 × Senior Citizen + 0.1387 × Partner - 0.6503 × Dependents  
+        Z = -1.7940 - 0.0213 × Gender + 0.0721 × Senior Citizen + 0.1387 × Partner - 0.6503 × Dependents  
         - 1.0726 × Tenure Months - 0.2304 × Phone Service + 0.3679 × Multiple Lines  
         - 0.2985 × Internet Service - 0.0778 × Online Security + 0.1565 × Online Backup  
         + 0.2707 × Device Protection - 0.0640 × Tech Support + 0.5191 × Streaming TV  
-        - 0.7533 × Contract + 0.2409 × Paperless Billing + 0.0453 × Payment Method + 0.0072 × CLTV**
+        - 0.7533 × Contract + 0.2409 × Paperless Billing + 0.0453 × Payment Method + 0.0072 × CLTV
         """)
 
         joblib.dump(model, "best_logistic_model.pkl")
         joblib.dump(scaler, "scaler.pkl")
         st.success("Model and Scaler saved successfully.")
-        st.markdown("**Resources:** [Best_parameters_of the model](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/worky.ipynb)")
-        
-        
+
+        st.markdown("**Resources:** [Best_parameters_of_the_model](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/worky.ipynb)")
+
 
 elif page == "Make a Prediction":
     st.title("Make a Prediction")
