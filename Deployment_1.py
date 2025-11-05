@@ -299,6 +299,7 @@ elif page == "Customer Churn Analysis":
     st.title("Customer Churn Analysis Dashboard")
     report_url = "https://app.powerbi.com/reportEmbed?reportId=2645a142-ecba-422a-9089-842afe1a29ee&autoAuth=true"
     st.components.v1.iframe(report_url, width=1200, height=800)
+    
 
 elif page == "Summarization":
     st.title("Summarization of Findings")
@@ -365,8 +366,11 @@ elif page == "Summarization":
         st.markdown("### Churn Rate Summary Table (Feature-wise)")
         st.dataframe(churn_summary_df, use_container_width=True)
 
-        # Bar Chart Visualization
-        st.bar_chart(churn_summary_df.set_index('Feature Condition')['Churn Rate (%)'])
+        ## Sort the DataFrame by churn rate descending
+        sorted_df = churn_summary_df.sort_values('Churn Rate (%)', ascending=False)
+
+        # Set the index and create the bar chart
+        st.bar_chart(sorted_df.set_index('Feature Condition')['Churn Rate (%)'])
 
         # Combined Condition Analysis
         combined_condition = pd.Series(True, index=df.index)
