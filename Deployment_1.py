@@ -162,7 +162,7 @@ elif page == "Model Training":
             }
         ]
 
-        grid = GridSearchCV(LogisticRegression(max_iter=1000), param_grid, cv=5, scoring='accuracy', n_jobs=-1)
+        grid = GridSearchCV(LogisticRegression(max_iter=1000), param_grid, cv=3, scoring='accuracy', n_jobs=-1)
         grid.fit(X_train_scaled, y_train)
 
         st.write("Best CV Score:", grid.best_score_)
