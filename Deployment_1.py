@@ -60,6 +60,7 @@ if page == "Project Overview":
     It demonstrates end-to-end implementation of a real-world telecom churn prediction system — from data exploration and modeling to visualization and deployment.  
     The workflow, presentation, and reproducibility of results reflect a professional, research-grade project designed to meet academic and industry expectations.  
     """)
+    st.markdown("**Resources:** [Data_source](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)")
 
     st.markdown("**Resources:** [GitHub Repository](https://github.com/skarshad1928/Teleco_Customer_Churn/tree/main)")
 
