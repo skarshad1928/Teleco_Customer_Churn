@@ -172,7 +172,7 @@ elif page == "Model Training":
         joblib.dump(model, "best_logistic_model.pkl")
         joblib.dump(scaler, "scaler.pkl")
         st.success("Model and Scaler saved successfully.")
-        t.markdown("**Resources:** [Best_parameters_of the model](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/worky.ipynb)")
+        st.markdown("**Resources:** [Best_parameters_of the model](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/worky.ipynb)")
         
         
 
