@@ -43,7 +43,7 @@ if page == "Project Overview":
     The workflow, presentation, and reproducibility of results reflect a professional, research-grade project designed to meet academic and industry expectations.  
     """)
 
-    st.markdown("**Resources:** [GitHub Repository](hhttps://github.com/skarshad1928/Teleco_Customer_Churn.git)")
+    st.markdown("**Resources:** [GitHub Repository](hhttps://github.com/skarshad1928/Teleco_Customer_Churn)")
 
 
 elif page == "Data Exploration":
