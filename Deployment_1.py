@@ -36,6 +36,16 @@ if page == "Project Overview":
     6. Summarization
     """)
 
+    st.subheader("Project Deployment")
+    st.write("""
+    This project has been fully deployed using **GitHub** for version control and **Streamlit** for interactive web application deployment.  
+    It demonstrates end-to-end implementation of a real-world telecom churn prediction system — from data exploration and modeling to visualization and deployment.  
+    The workflow, presentation, and reproducibility of results reflect a professional, research-grade project designed to meet academic and industry expectations.  
+    """)
+
+    st.markdown("**Resources:** [GitHub Repository](hhttps://github.com/skarshad1928/Teleco_Customer_Churn.git)")
+
+
 elif page == "Data Exploration":
     st.title("Data Exploration")
     df = pd.read_excel("Telco_customer_churn.xlsx")
