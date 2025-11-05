@@ -333,7 +333,7 @@ elif page == "Summarization":
 
         # Feature conditions for summary
         conditions = {
-            'Senior Citizen == No': df['Senior Citizen'] == 'No',
+            'Senior Citizen == Yes': df['Senior Citizen'] == 'Yes',
             'Partner == No': df['Partner'] == 'No',
             'Dependents == No': df['Dependents'] == 'No',
             'Phone Service == Yes': df['Phone Service'] == 'Yes',
