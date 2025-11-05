@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
-from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold, cross_val_score
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     classification_report, confusion_matrix,
@@ -22,6 +22,9 @@ page = st.sidebar.selectbox("Select Section", [
     "Make a Prediction", "Customer Churn Analysis", "Summarization"
 ])
 
+# -------------------------------
+# PROJECT OVERVIEW
+# -------------------------------
 if page == "Project Overview":
     st.title("Customer Churn Analysis - Telecom Sector")
     st.subheader("Objective")
@@ -58,24 +61,28 @@ if page == "Project Overview":
     st.write("""
     This project has been fully deployed using GitHub for version control and Streamlit for interactive web application deployment.  
     It demonstrates end-to-end implementation of a real-world telecom churn prediction system — from data exploration and modeling to visualization and deployment.  
-    The workflow, presentation, and reproducibility of results reflect a professional, research-grade project designed to meet academic and industry expectations.  
     """)
-    st.markdown("**Resources:** [Data_source](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)")
 
+    st.markdown("**Resources:** [Data_source](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)")
     st.markdown("**Resources:** [GitHub Repository](https://github.com/skarshad1928/Teleco_Customer_Churn/tree/main)")
 
 
+# -------------------------------
+# DATA EXPLORATION
+# -------------------------------
 elif page == "Data Exploration":
     st.title("Data Exploration")
     df = pd.read_excel("Telco_customer_churn.xlsx")
     st.write("First 5 Rows:")
     st.write(df.head())
+
     st.write("Column Names and Data Types:")
     st.write(pd.DataFrame({
         "Column": df.columns,
         "Data Type": df.dtypes.astype(str),
         "Null Values": df.isnull().sum().values
     }))
+
     numeric_df = df.select_dtypes(include=[np.number])
     if not numeric_df.empty:
         st.write("Correlation Matrix:")
@@ -83,10 +90,14 @@ elif page == "Data Exploration":
         plt.figure(figsize=(10, 6))
         sns.heatmap(numeric_df.corr(), annot=True, cmap="RdBu", center=0)
         st.pyplot(plt.gcf())
+
     st.markdown("**Resources:** [Data_understanding_explore](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/WORK1.ipynb)")
     st.markdown("**Resources:** [Data_prep_for_model](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/WORK2.ipynb)")
 
 
+# -------------------------------
+# MODEL TRAINING
+# -------------------------------
 elif page == "Model Training":
     st.title("Model Training")
 
@@ -150,7 +161,6 @@ elif page == "Model Training":
         # Train selected model
         if model_choice == "Logistic Regression":
             st.subheader("Training Logistic Regression with GridSearchCV")
-            from sklearn.linear_model import LogisticRegression
 
             param_grid = [
                 {
@@ -179,8 +189,8 @@ elif page == "Model Training":
             st.write("Best Parameters:", grid.best_params_)
 
         elif model_choice == "Random Forest":
-            st.subheader("Training Random Forest with GridSearchCV")
             from sklearn.ensemble import RandomForestClassifier
+            st.subheader("Training Random Forest with GridSearchCV")
 
             param_grid = {
                 'n_estimators': [100, 200, 300],
@@ -190,21 +200,16 @@ elif page == "Model Training":
             }
 
             grid = GridSearchCV(RandomForestClassifier(random_state=42), param_grid, cv=5, scoring='accuracy', n_jobs=-1)
-            grid.fit(X_train, y_train)  # no scaling needed
+            grid.fit(X_train, y_train)
 
             best_model = grid.best_estimator_
             st.write("Best CV Score:", grid.best_score_)
             st.write("Best Parameters:", grid.best_params_)
 
-        # Common evaluation logic
-        if model_choice == "Random Forest":
-            y_pred_proba = best_model.predict_proba(X_test)[:, 1]
-        else:
-            y_pred_proba = best_model.predict_proba(X_test_scaled)[:, 1]
-
+        # Evaluation
+        y_pred_proba = best_model.predict_proba(X_test_scaled if model_choice == "Logistic Regression" else X_test)[:, 1]
         fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
-        J = tpr - fpr
-        ix = np.argmax(J)
+        ix = np.argmax(tpr - fpr)
         best_thresh = thresholds[ix]
         y_pred_opt = (y_pred_proba >= best_thresh).astype(int)
 
@@ -216,7 +221,8 @@ elif page == "Model Training":
         st.write(f"Accuracy: {acc:.4f}")
         st.write(f"F1 Score: {f1:.4f}")
         st.write(f"AUC Score: {auc:.4f}")
-        st.write(f"Optimal Threshold (Youden's J): {best_thresh:.4f}")
+        st.write(f"Optimal Threshold: {best_thresh:.4f}")
+
         st.text("Classification Report:")
         st.text(classification_report(y_test, y_pred_opt))
         st.write("Confusion Matrix:")
@@ -227,134 +233,39 @@ elif page == "Model Training":
         plt.scatter(fpr[ix], tpr[ix], color="red", label=f"Best Threshold = {best_thresh:.3f}")
         plt.xlabel("False Positive Rate")
         plt.ylabel("True Positive Rate")
-        plt.title("ROC Curve and Optimal Threshold")
+        plt.title("ROC Curve")
         plt.legend()
         st.pyplot(plt.gcf())
 
-        # Save models — Logistic Regression for prediction page
         if model_choice == "Logistic Regression":
             joblib.dump(best_model, "best_logistic_model.pkl")
             joblib.dump(scaler, "scaler.pkl")
             joblib.dump(best_thresh, "best_threshold.pkl")
-            st.success("Logistic Regression Model, Scaler, and Threshold saved for prediction.")
+            st.success(" Logistic Regression Model, Scaler, and Threshold saved.")
 
         elif model_choice == "Random Forest":
             joblib.dump(best_model, "best_random_forest_model.pkl")
-            st.success("Random Forest Model saved successfully (not used for predictions).")
-
-        st.markdown("**Resources:** [Best_parameters_of_the_model](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/worky.ipynb)")
+            st.success(" Random Forest Model saved successfully.")
 
 
-
-elif page == "Make a Prediction":
-    st.title("Make a Prediction")
-
-    # Load the Logistic Regression model only
-    try:
-        model = joblib.load("best_logistic_model.pkl")
-        scaler = joblib.load("scaler.pkl")
-        best_threshold = joblib.load("best_threshold.pkl")
-        st.success(" Logistic Regression model loaded successfully.")
-    except:
-        st.error(" Model files not found. Please train the Logistic Regression model first.")
-        st.stop()
-
-    st.write("### Enter Customer Details Below")
-
-    gender_map = {'Male': 1, 'Female': 0}
-    partner_map = {'Yes': 1, 'No': 0}
-    dependents_map = {'Yes': 1, 'No': 0}
-    phone_service_map = {'Yes': 1, 'No': 0}
-    multiple_lines_map = {'Yes': 1, 'No': 0, 'No phone service': 2}
-    internet_service_map = {'DSL': 0, 'Fiber optic': 1, 'No': 2}
-    online_security_map = {'Yes': 1, 'No': 0, 'No internet service': 2}
-    online_backup_map = {'Yes': 1, 'No': 0, 'No internet service': 2}
-    device_protection_map = {'Yes': 1, 'No': 0, 'No internet service': 2}
-    tech_support_map = {'Yes': 1, 'No': 0, 'No internet service': 2}
-    streaming_tv_map = {'Yes': 1, 'No': 0, 'No internet service': 2}
-    contract_map = {'Month-to-month': 0, 'One year': 1, 'Two year': 2}
-    paperless_billing_map = {'Yes': 1, 'No': 0}
-    payment_method_map = {
-        'Electronic check': 0,
-        'Mailed check': 1,
-        'Bank transfer (automatic)': 2,
-        'Credit card (automatic)': 3
-    }
-
-    gender = st.selectbox("Gender", list(gender_map.keys()))
-    senior_citizen = st.number_input("Senior Citizen (0 = No, 1 = Yes)", min_value=0, max_value=1, value=0)
-    partner = st.selectbox("Partner", list(partner_map.keys()))
-    dependents = st.selectbox("Dependents", list(dependents_map.keys()))
-    tenure = st.number_input("Tenure Months", min_value=0, max_value=100, value=12)
-    phone_service = st.selectbox("Phone Service", list(phone_service_map.keys()))
-    multiple_lines = st.selectbox("Multiple Lines", list(multiple_lines_map.keys()))
-    internet_service = st.selectbox("Internet Service", list(internet_service_map.keys()))
-    online_security = st.selectbox("Online Security", list(online_security_map.keys()))
-    online_backup = st.selectbox("Online Backup", list(online_backup_map.keys()))
-    device_protection = st.selectbox("Device Protection", list(device_protection_map.keys()))
-    tech_support = st.selectbox("Tech Support", list(tech_support_map.keys()))
-    streaming_tv = st.selectbox("Streaming TV", list(streaming_tv_map.keys()))
-    contract = st.selectbox("Contract", list(contract_map.keys()))
-    paperless_billing = st.selectbox("Paperless Billing", list(paperless_billing_map.keys()))
-    payment_method = st.selectbox("Payment Method", list(payment_method_map.keys()))
-    cltv = st.number_input("CLTV", min_value=0.0, max_value=10000.0, value=2000.0)
-
-    inputs = {
-        "Gender": gender_map[gender],
-        "Senior Citizen": senior_citizen,
-        "Partner": partner_map[partner],
-        "Dependents": dependents_map[dependents],
-        "Tenure Months": tenure,
-        "Phone Service": phone_service_map[phone_service],
-        "Multiple Lines": multiple_lines_map[multiple_lines],
-        "Internet Service": internet_service_map[internet_service],
-        "Online Security": online_security_map[online_security],
-        "Online Backup": online_backup_map[online_backup],
-        "Device Protection": device_protection_map[device_protection],
-        "Tech Support": tech_support_map[tech_support],
-        "Streaming TV": streaming_tv_map[streaming_tv],
-        "Contract": contract_map[contract],
-        "Paperless Billing": paperless_billing_map[paperless_billing],
-        "Payment Method": payment_method_map[payment_method],
-        "CLTV": cltv
-    }
-
-    if st.button(" Predict Churn"):
-        X_new = pd.DataFrame([inputs])
-        X_new_scaled = scaler.transform(X_new)
-
-        churn_prob = model.predict_proba(X_new_scaled)[:, 1][0]
-        prediction = 1 if churn_prob >= best_threshold else 0
-
-        st.subheader("Prediction Results")
-        st.write(f"**Predicted Churn Probability:** {churn_prob:.4f}")
-        st.write(f"**Optimal Threshold Used:** {best_threshold:.4f}")
-
-        if prediction == 1:
-            st.error(" The customer is **LIKELY TO CHURN**.")
-        else:
-            st.success(" The customer is **NOT likely to churn**.")
-
-
+# -------------------------------
+# CUSTOMER CHURN ANALYSIS (Power BI)
+# -------------------------------
 elif page == "Customer Churn Analysis":
     st.title("Customer Churn Analysis Dashboard")
     report_url = "https://app.powerbi.com/reportEmbed?reportId=2645a142-ecba-422a-9089-842afe1a29ee&autoAuth=true"
     st.components.v1.iframe(report_url, width=1200, height=800)
-    
 
+
+# -------------------------------
+# SUMMARIZATION
+# -------------------------------
 elif page == "Summarization":
     st.title("Summarization of Findings")
 
     st.markdown("""
     The Telecom Customer Churn Analysis provides a comprehensive understanding of behavioral, contractual, and service-related patterns 
-    influencing customer attrition. Results show that the majority of churned users are younger, non-senior citizens, indicating a 
-    higher tendency toward switching and less long-term commitment. About one-third of churned customers were single or without dependents, 
-    reflecting reduced loyalty and a lower threshold for dissatisfaction. Customers using fibre optic services churned more than DSL users, 
-    proving that superior infrastructure alone does not ensure satisfaction without strong customer care. Lack of technical support, 
-    missing online security, and absence of reliable device protection emerged as leading churn drivers. These insights emphasize that 
-    strengthening customer support, improving engagement programs for younger users, ensuring reliable network uptime, and enhancing 
-    value-added services can significantly reduce churn. In summary, data-driven retention initiatives can transform reactive management 
-    into proactive customer loyalty strategies for telecom firms.
+    influencing customer attrition...
     """)
 
     st.markdown("### Logistic Regression Equation Used for Prediction:")
@@ -366,14 +277,11 @@ elif page == "Summarization":
     - 0.7533 × Contract + 0.2409 × Paperless Billing + 0.0453 × Payment Method + 0.0072 × CLTV
     """)
 
-    # Display Churn Summary Table
     try:
-        import pandas as pd
-
         df = pd.read_excel("Telco_customer_churn.xlsx")
         churn_col = 'Churn Value'
 
-        # Feature conditions for summary
+        # Define churn-driving conditions
         conditions = {
             'Senior Citizen == Yes': df['Senior Citizen'] == 'Yes',
             'Partner == No': df['Partner'] == 'No',
@@ -403,17 +311,13 @@ elif page == "Summarization":
             })
 
         churn_summary_df = pd.DataFrame(summary)
-
         st.markdown("### Churn Rate Summary Table (Feature-wise)")
         st.dataframe(churn_summary_df, use_container_width=True)
 
-        ## Sort the DataFrame by churn rate descending
         sorted_df = churn_summary_df.sort_values('Churn Rate (%)', ascending=False)
-
-        # Set the index and create the bar chart
         st.bar_chart(sorted_df.set_index('Feature Condition')['Churn Rate (%)'])
 
-        # Combined Condition Analysis
+        # Combined Condition Summary
         combined_condition = pd.Series(True, index=df.index)
         for cond in conditions.values():
             combined_condition &= cond
@@ -428,9 +332,8 @@ elif page == "Summarization":
         - Churned Customers: {churned_combined}  
         - Churn Rate: {round(churn_rate_combined, 2)}%
         """)
-            # --- Z-score mapping and Tenure/CLTV range logic ---
-    try:
-        # Define numeric Z contribution estimates per condition (example illustrative mapping)
+
+        # --- Z-score mapping and Tenure/CLTV range logic ---
         z_mapping = {
             'Senior Citizen == Yes': 0.0721,
             'Partner == No': 0.1387,
@@ -447,34 +350,24 @@ elif page == "Summarization":
             'Paperless Billing == Yes': 0.2409
         }
 
-        # Compute total Z
         total_z = sum([z_mapping.get(c, 0) for c in conditions.keys()])
-
         st.markdown("### Logistic Z-value Analysis (Feature Conditions)")
-
-        st.write(f"**Calculated Z value (sum of chosen conditions):** {total_z:.4f}")
+        st.write(f"**Calculated Z value:** {total_z:.4f}")
 
         if total_z >= -0.875:
             st.success(f" Z = {total_z:.4f} ≥ -0.875 ⇒ Customer likely to **Churn**")
             st.markdown("""
-            **Recommended Ranges (Based on Z ≥ -0.875):**
-            - **Tenure Months:** Preferably between **0 to 15 months**  
-            - **CLTV:** Typically **below 3000**  
-            
-            Customers in this range show higher churn probability; retention strategies should focus here.
+            **Recommended Ranges (Z ≥ -0.875):**
+            - **Tenure Months:** 0–15  
+            - **CLTV:** below 3000  
             """)
         else:
             st.info(f" Z = {total_z:.4f} < -0.875 ⇒ Customer **not likely to churn**")
             st.markdown("""
-            **Recommended Ranges (Based on Z < -0.875):**
-            - **Tenure Months:** Usually **above 20 months**  
-            - **CLTV:** Typically **above 4000**  
-            
-            Customers in this segment exhibit strong retention and low churn risk.
+            **Recommended Ranges (Z < -0.875):**
+            - **Tenure Months:** >20  
+            - **CLTV:** above 4000  
             """)
-    except Exception as e:
-        st.error(f"Error computing Z-value range: {e}")
-
 
     except Exception as e:
         st.error(f"Error displaying churn summary table: {e}")
