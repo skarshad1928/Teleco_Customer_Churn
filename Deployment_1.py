@@ -88,7 +88,12 @@ elif page == "Data Exploration":
 
 
 elif page == "Model Training":
-    st.title("Model Training - Logistic Regression")
+    st.title("Model Training")
+
+    model_choice = st.selectbox(
+        "Select Model for Training",
+        ["Logistic Regression", "Random Forest"]
+    )
 
     if st.button("Train Model"):
         df = pd.read_excel("Final_Complete_cleaned.xlsx")
@@ -142,35 +147,61 @@ elif page == "Model Training":
         X_train_scaled = scaler.fit_transform(X_train)
         X_test_scaled = scaler.transform(X_test)
 
-        st.subheader("Hyperparameter Optimization using GridSearchCV")
+        # Train selected model
+        if model_choice == "Logistic Regression":
+            st.subheader("Training Logistic Regression with GridSearchCV")
+            from sklearn.linear_model import LogisticRegression
 
-        param_grid = [
-            {
-                'solver': ['liblinear'],
-                'penalty': ['l1', 'l2'],
-                'C': [0.01, 0.1, 1, 10, 100]
-            },
-            {
-                'solver': ['lbfgs'],
-                'penalty': ['l2', None],
-                'C': [0.01, 0.1, 1, 10, 100]
-            },
-            {
-                'solver': ['saga'],
-                'penalty': ['l1', 'l2', 'elasticnet', None],
-                'C': [0.01, 0.1, 1, 10, 100],
-                'l1_ratio': [0, 0.5, 1]
+            param_grid = [
+                {
+                    'solver': ['liblinear'],
+                    'penalty': ['l1', 'l2'],
+                    'C': [0.01, 0.1, 1, 10, 100]
+                },
+                {
+                    'solver': ['lbfgs'],
+                    'penalty': ['l2', None],
+                    'C': [0.01, 0.1, 1, 10, 100]
+                },
+                {
+                    'solver': ['saga'],
+                    'penalty': ['l1', 'l2', 'elasticnet', None],
+                    'C': [0.01, 0.1, 1, 10, 100],
+                    'l1_ratio': [0, 0.5, 1]
+                }
+            ]
+
+            grid = GridSearchCV(LogisticRegression(max_iter=1000), param_grid, cv=5, scoring='accuracy', n_jobs=-1)
+            grid.fit(X_train_scaled, y_train)
+
+            best_model = grid.best_estimator_
+            st.write("Best CV Score:", grid.best_score_)
+            st.write("Best Parameters:", grid.best_params_)
+
+        elif model_choice == "Random Forest":
+            st.subheader("Training Random Forest with GridSearchCV")
+            from sklearn.ensemble import RandomForestClassifier
+
+            param_grid = {
+                'n_estimators': [100, 200, 300],
+                'max_depth': [None, 10, 20, 30],
+                'min_samples_split': [2, 5, 10],
+                'min_samples_leaf': [1, 2, 4]
             }
-        ]
 
-        grid = GridSearchCV(LogisticRegression(max_iter=1000), param_grid, cv= 5, scoring='accuracy', n_jobs=-1)
-        grid.fit(X_train_scaled, y_train)
+            grid = GridSearchCV(RandomForestClassifier(random_state=42), param_grid, cv=5, scoring='accuracy', n_jobs=-1)
+            grid.fit(X_train, y_train)  # no scaling needed
 
-        st.write("Best CV Score:", grid.best_score_)
-        st.write("Best Parameters:", grid.best_params_)
+            best_model = grid.best_estimator_
+            st.write("Best CV Score:", grid.best_score_)
+            st.write("Best Parameters:", grid.best_params_)
 
-        best_model = grid.best_estimator_
-        y_pred_proba = best_model.predict_proba(X_test_scaled)[:, 1]
+        # Common evaluation logic
+        if model_choice == "Random Forest":
+            y_pred_proba = best_model.predict_proba(X_test)[:, 1]
+        else:
+            y_pred_proba = best_model.predict_proba(X_test_scaled)[:, 1]
+
         fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
         J = tpr - fpr
         ix = np.argmax(J)
@@ -200,13 +231,19 @@ elif page == "Model Training":
         plt.legend()
         st.pyplot(plt.gcf())
 
-        joblib.dump(best_model, "best_logistic_model.pkl")
-        joblib.dump(scaler, "scaler.pkl")
-        joblib.dump(best_thresh, "best_threshold.pkl")
+        # Save models — Logistic Regression for prediction page
+        if model_choice == "Logistic Regression":
+            joblib.dump(best_model, "best_logistic_model.pkl")
+            joblib.dump(scaler, "scaler.pkl")
+            joblib.dump(best_thresh, "best_threshold.pkl")
+            st.success("Logistic Regression Model, Scaler, and Threshold saved for prediction.")
 
-        st.success("Best Model, Scaler, and Threshold saved successfully.")
+        elif model_choice == "Random Forest":
+            joblib.dump(best_model, "best_random_forest_model.pkl")
+            st.success("Random Forest Model saved successfully (not used for predictions).")
 
         st.markdown("**Resources:** [Best_parameters_of_the_model](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/worky.ipynb)")
+
 
 
 elif page == "Make a Prediction":
