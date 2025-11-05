@@ -54,6 +54,8 @@ elif page == "Data Exploration":
         plt.figure(figsize=(10, 6))
         sns.heatmap(numeric_df.corr(), annot=True, cmap="RdBu", center=0)
         st.pyplot(plt.gcf())
+        st.markdown("**Resources:** [Data_understanding_explore](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/WORK1.ipynb)")
+        st.markdown("**Resources:** [Data_prep_for_model](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/WORK2.ipynb)")
 
 elif page == "Model Training":
     st.title("Model Training - Logistic Regression")
@@ -160,6 +162,8 @@ elif page == "Model Training":
         joblib.dump(model, "best_logistic_model.pkl")
         joblib.dump(scaler, "scaler.pkl")
         st.success("Model and Scaler saved successfully.")
+        
+        
 
 elif page == "Make a Prediction":
     st.title("Make a Prediction")
@@ -342,4 +346,4 @@ elif page == "Summarization":
     except Exception as e:
         st.error(f"Error displaying churn summary table: {e}")
 
-    st.markdown("**Resources:** [GitHub Repository](https://github.com/skarshad1928/Python/tree/main/NSDC%20INTERNSHIP)")
+    st.markdown("**Resources:** [GitHub Repository](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace)")
