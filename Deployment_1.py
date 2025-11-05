@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold, cross_val_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     classification_report, confusion_matrix,
@@ -37,7 +37,6 @@ if page == "Project Overview":
     6. Summarization
     """)
 
-    # Tools and Technologies section
     st.subheader("Tools and Technologies Used")
     st.markdown("""
     | Category | Tools / Libraries |
@@ -65,8 +64,6 @@ if page == "Project Overview":
     st.markdown("**Resources:** [GitHub Repository](https://github.com/skarshad1928/Teleco_Customer_Churn/tree/main)")
 
 
-
-
 elif page == "Data Exploration":
     st.title("Data Exploration")
     df = pd.read_excel("Telco_customer_churn.xlsx")
@@ -88,6 +85,7 @@ elif page == "Data Exploration":
     st.markdown("**Resources:** [Data_understanding_explore](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/WORK1.ipynb)")
     st.markdown("**Resources:** [Data_prep_for_model](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/WORK2.ipynb)")
 
+
 elif page == "Model Training":
     st.title("Model Training - Logistic Regression")
 
@@ -107,8 +105,7 @@ elif page == "Model Training":
 
         st.write("Heatmap Before Feature Selection")
         plt.figure(figsize=(25, 25))
-        ck = numeric_for_corr.corr()
-        sns.heatmap(ck, annot=True, cmap="RdBu", center=0)
+        sns.heatmap(numeric_for_corr.corr(), annot=True, cmap="RdBu", center=0)
         st.pyplot(plt.gcf())
 
         selected_columns = [
@@ -122,12 +119,11 @@ elif page == "Model Training":
 
         st.subheader("Correlation Matrix After Feature Selection")
         numeric_selected = df_selected.select_dtypes(include=[np.number])
-        ct = numeric_selected.corr()
-        st.write(ct)
+        st.write(numeric_selected.corr())
 
         st.write("Heatmap After Feature Selection")
         plt.figure(figsize=(25, 25))
-        sns.heatmap(ct, annot=True, cmap="RdBu", center=0)
+        sns.heatmap(numeric_selected.corr(), annot=True, cmap="RdBu", center=0)
         st.pyplot(plt.gcf())
 
         if "Churn Label" not in df_selected.columns:
@@ -140,30 +136,40 @@ elif page == "Model Training":
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.3, random_state=42, shuffle=True
         )
+
         scaler = StandardScaler()
         X_train_scaled = scaler.fit_transform(X_train)
         X_test_scaled = scaler.transform(X_test)
 
-        best_params = {'C': 0.01, 'penalty': None, 'solver': 'lbfgs'}
-        model = LogisticRegression(
-            C=best_params['C'],
-            penalty=best_params['penalty'],
-            solver=best_params['solver'],
-            max_iter=1000
-        )
-        model.fit(X_train_scaled, y_train)
+        st.subheader("Hyperparameter Optimization using GridSearchCV")
 
-        from sklearn.model_selection import cross_val_score, StratifiedKFold
+        param_grid = [
+            {
+                'solver': ['liblinear'],
+                'penalty': ['l1', 'l2'],
+                'C': [0.01, 0.1, 1, 10, 100]
+            },
+            {
+                'solver': ['lbfgs'],
+                'penalty': ['l2', None],
+                'C': [0.01, 0.1, 1, 10, 100]
+            },
+            {
+                'solver': ['saga'],
+                'penalty': ['l1', 'l2', 'elasticnet', None],
+                'C': [0.01, 0.1, 1, 10, 100],
+                'l1_ratio': [0, 0.5, 1]
+            }
+        ]
 
-        cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-        acc_scores = cross_val_score(model, X_train_scaled, y_train, cv=cv, scoring='accuracy')
-        f1_scores = cross_val_score(model, X_train_scaled, y_train, cv=cv, scoring='f1')
+        grid = GridSearchCV(LogisticRegression(max_iter=1000), param_grid, cv=5, scoring='accuracy', n_jobs=-1)
+        grid.fit(X_train_scaled, y_train)
 
-        st.subheader("Cross-Validation Results (5-Fold)")
-        st.write(f"Accuracy: Mean = {acc_scores.mean():.4f}, Std = {acc_scores.std():.4f}")
-        st.write(f"F1 Score: Mean = {f1_scores.mean():.4f}, Std = {f1_scores.std():.4f}")
+        st.write("Best CV Score:", grid.best_score_)
+        st.write("Best Parameters:", grid.best_params_)
 
-        y_pred_proba = model.predict_proba(X_test_scaled)[:, 1]
+        best_model = grid.best_estimator_
+        y_pred_proba = best_model.predict_proba(X_test_scaled)[:, 1]
         fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
         J = tpr - fpr
         ix = np.argmax(J)
@@ -193,18 +199,11 @@ elif page == "Model Training":
         plt.legend()
         st.pyplot(plt.gcf())
 
-        st.subheader("Model Logistic Regression Equation (Z Equation)")
-        st.markdown("""
-        Z = -1.7940 - 0.0213 × Gender + 0.0721 × Senior Citizen + 0.1387 × Partner - 0.6503 × Dependents  
-        - 1.0726 × Tenure Months - 0.2304 × Phone Service + 0.3679 × Multiple Lines  
-        - 0.2985 × Internet Service - 0.0778 × Online Security + 0.1565 × Online Backup  
-        + 0.2707 × Device Protection - 0.0640 × Tech Support + 0.5191 × Streaming TV  
-        - 0.7533 × Contract + 0.2409 × Paperless Billing + 0.0453 × Payment Method + 0.0072 × CLTV
-        """)
-
-        joblib.dump(model, "best_logistic_model.pkl")
+        joblib.dump(best_model, "best_logistic_model.pkl")
         joblib.dump(scaler, "scaler.pkl")
-        st.success("Model and Scaler saved successfully.")
+        joblib.dump(best_thresh, "best_threshold.pkl")
+
+        st.success("Best Model, Scaler, and Threshold saved successfully.")
 
         st.markdown("**Resources:** [Best_parameters_of_the_model](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/worky.ipynb)")
 
@@ -215,9 +214,10 @@ elif page == "Make a Prediction":
     try:
         model = joblib.load("best_logistic_model.pkl")
         scaler = joblib.load("scaler.pkl")
-        st.write("Model loaded successfully.")
+        best_threshold = joblib.load("best_threshold.pkl")
+        st.write("Model and Threshold loaded successfully.")
     except:
-        st.error("Model not found. Train the model first in 'Model Training'.")
+        st.error("Model files not found. Please train the model first.")
         st.stop()
 
     st.write("Enter customer details below:")
@@ -282,17 +282,13 @@ elif page == "Make a Prediction":
 
     if st.button("Predict Churn"):
         X_new = pd.DataFrame([inputs])
-        try:
-            X_new_scaled = scaler.transform(X_new)
-        except Exception:
-            st.error("Error scaling input features. Ensure mappings match model training.")
-            st.stop()
+        X_new_scaled = scaler.transform(X_new)
 
         churn_prob = model.predict_proba(X_new_scaled)[:, 1][0]
-        threshold = 0.227
-        prediction = 1 if churn_prob >= threshold else 0
+        prediction = 1 if churn_prob >= best_threshold else 0
 
         st.write(f"Predicted churn probability: {churn_prob:.4f}")
+        st.write(f"Used Optimal Threshold: {best_threshold:.4f}")
         if prediction == 1:
             st.write("The customer is likely to CHURN.")
         else:
