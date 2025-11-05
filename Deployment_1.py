@@ -26,6 +26,7 @@ if page == "Project Overview":
     st.title("Customer Churn Analysis - Telecom Sector")
     st.subheader("Objective")
     st.write("The aim of this project is to predict customer churn — identifying customers who are likely to leave the telecom service.")
+    
     st.subheader("Project Workflow")
     st.markdown("""
     1. Data Exploration  
@@ -35,14 +36,9 @@ if page == "Project Overview":
     5. Business Insights  
     6. Summarization
     """)
-
-    st.subheader("Project Deployment")
-    st.write("""
-    This project has been fully deployed using **GitHub** for version control and **Streamlit** for interactive web application deployment.  
-    It demonstrates end-to-end implementation of a real-world telecom churn prediction system — from data exploration and modeling to visualization and deployment.  
-    The workflow, presentation, and reproducibility of results reflect a professional, research-grade project designed to meet academic and industry expectations.  
-    """)
-        st.subheader("Tools and Technologies Used")
+    
+    # 🔧 Tools and Technologies section added here
+    st.subheader("Tools and Technologies Used")
     st.markdown("""
     | Category | Tools / Libraries |
     |-----------|------------------|
@@ -57,8 +53,15 @@ if page == "Project Overview":
     | **Deployment** | Streamlit Cloud |
     """)
 
+    st.subheader("Project Deployment")
+    st.write("""
+    This project has been fully deployed using **GitHub** for version control and **Streamlit** for interactive web application deployment.  
+    It demonstrates end-to-end implementation of a real-world telecom churn prediction system — from data exploration and modeling to visualization and deployment.  
+    The workflow, presentation, and reproducibility of results reflect a professional, research-grade project designed to meet academic and industry expectations.  
+    """)
 
     st.markdown("**Resources:** [GitHub Repository](https://github.com/skarshad1928/Teleco_Customer_Churn/tree/main)")
+
 
 
 elif page == "Data Exploration":
