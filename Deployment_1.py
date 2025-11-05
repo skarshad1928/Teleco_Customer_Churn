@@ -249,16 +249,17 @@ elif page == "Model Training":
 elif page == "Make a Prediction":
     st.title("Make a Prediction")
 
+    # Load the Logistic Regression model only
     try:
         model = joblib.load("best_logistic_model.pkl")
         scaler = joblib.load("scaler.pkl")
         best_threshold = joblib.load("best_threshold.pkl")
-        st.write("Model and Threshold loaded successfully.")
+        st.success(" Logistic Regression model loaded successfully.")
     except:
-        st.error("Model files not found. Please train the model first.")
+        st.error(" Model files not found. Please train the Logistic Regression model first.")
         st.stop()
 
-    st.write("Enter customer details below:")
+    st.write("### Enter Customer Details Below")
 
     gender_map = {'Male': 1, 'Female': 0}
     partner_map = {'Yes': 1, 'No': 0}
@@ -318,19 +319,22 @@ elif page == "Make a Prediction":
         "CLTV": cltv
     }
 
-    if st.button("Predict Churn"):
+    if st.button(" Predict Churn"):
         X_new = pd.DataFrame([inputs])
         X_new_scaled = scaler.transform(X_new)
 
         churn_prob = model.predict_proba(X_new_scaled)[:, 1][0]
         prediction = 1 if churn_prob >= best_threshold else 0
 
-        st.write(f"Predicted churn probability: {churn_prob:.4f}")
-        st.write(f"Used Optimal Threshold: {best_threshold:.4f}")
+        st.subheader("Prediction Results")
+        st.write(f"**Predicted Churn Probability:** {churn_prob:.4f}")
+        st.write(f"**Optimal Threshold Used:** {best_threshold:.4f}")
+
         if prediction == 1:
-            st.write("The customer is likely to CHURN.")
+            st.error(" The customer is **LIKELY TO CHURN**.")
         else:
-            st.write("The customer is NOT likely to churn.")
+            st.success(" The customer is **NOT likely to churn**.")
+
 
 elif page == "Customer Churn Analysis":
     st.title("Customer Churn Analysis Dashboard")
