@@ -22,9 +22,7 @@ page = st.sidebar.selectbox("Select Section", [
     "Make a Prediction", "Customer Churn Analysis", "Summarization"
 ])
 
-# -------------------------------
-# PROJECT OVERVIEW
-# -------------------------------
+
 if page == "Project Overview":
     st.title("Customer Churn Analysis - Telecom Sector")
     st.subheader("Objective")
@@ -67,9 +65,9 @@ if page == "Project Overview":
     st.markdown("**Resources:** [GitHub Repository](https://github.com/skarshad1928/Teleco_Customer_Churn/tree/main)")
 
 
-# -------------------------------
+
 # DATA EXPLORATION
-# -------------------------------
+
 elif page == "Data Exploration":
     st.title("Data Exploration")
     df = pd.read_excel("Telco_customer_churn.xlsx")
@@ -95,9 +93,9 @@ elif page == "Data Exploration":
     st.markdown("**Resources:** [Data_prep_for_model](https://github.com/skarshad1928/Python/blob/main/Data_ware_House_Workspace/WORK2.ipynb)")
 
 
-# -------------------------------
+
 # MODEL TRAINING
-# -------------------------------
+
 elif page == "Model Training":
     st.title("Model Training")
 
@@ -247,19 +245,108 @@ elif page == "Model Training":
             joblib.dump(best_model, "best_random_forest_model.pkl")
             st.success(" Random Forest Model saved successfully.")
 
+elif page == "Make a Prediction":
+    st.title("Make a Prediction")
 
-# -------------------------------
+    # Load the Logistic Regression model only
+    try:
+        model = joblib.load("best_logistic_model.pkl")
+        scaler = joblib.load("scaler.pkl")
+        best_threshold = joblib.load("best_threshold.pkl")
+        st.success(" Logistic Regression model loaded successfully.")
+    except:
+        st.error(" Model files not found. Please train the Logistic Regression model first.")
+        st.stop()
+
+    st.write("### Enter Customer Details Below")
+
+    # Mapping for categorical inputs
+    gender_map = {'Male': 1, 'Female': 0}
+    partner_map = {'Yes': 1, 'No': 0}
+    dependents_map = {'Yes': 1, 'No': 0}
+    phone_service_map = {'Yes': 1, 'No': 0}
+    multiple_lines_map = {'Yes': 1, 'No': 0, 'No phone service': 2}
+    internet_service_map = {'DSL': 0, 'Fiber optic': 1, 'No': 2}
+    online_security_map = {'Yes': 1, 'No': 0, 'No internet service': 2}
+    online_backup_map = {'Yes': 1, 'No': 0, 'No internet service': 2}
+    device_protection_map = {'Yes': 1, 'No': 0, 'No internet service': 2}
+    tech_support_map = {'Yes': 1, 'No': 0, 'No internet service': 2}
+    streaming_tv_map = {'Yes': 1, 'No': 0, 'No internet service': 2}
+    contract_map = {'Month-to-month': 0, 'One year': 1, 'Two year': 2}
+    paperless_billing_map = {'Yes': 1, 'No': 0}
+    payment_method_map = {
+        'Electronic check': 0,
+        'Mailed check': 1,
+        'Bank transfer (automatic)': 2,
+        'Credit card (automatic)': 3
+    }
+
+    # Input widgets
+    gender = st.selectbox("Gender", list(gender_map.keys()))
+    senior_citizen = st.number_input("Senior Citizen (0 = No, 1 = Yes)", min_value=0, max_value=1, value=0)
+    partner = st.selectbox("Partner", list(partner_map.keys()))
+    dependents = st.selectbox("Dependents", list(dependents_map.keys()))
+    tenure = st.number_input("Tenure Months", min_value=0, max_value=100, value=12)
+    phone_service = st.selectbox("Phone Service", list(phone_service_map.keys()))
+    multiple_lines = st.selectbox("Multiple Lines", list(multiple_lines_map.keys()))
+    internet_service = st.selectbox("Internet Service", list(internet_service_map.keys()))
+    online_security = st.selectbox("Online Security", list(online_security_map.keys()))
+    online_backup = st.selectbox("Online Backup", list(online_backup_map.keys()))
+    device_protection = st.selectbox("Device Protection", list(device_protection_map.keys()))
+    tech_support = st.selectbox("Tech Support", list(tech_support_map.keys()))
+    streaming_tv = st.selectbox("Streaming TV", list(streaming_tv_map.keys()))
+    contract = st.selectbox("Contract", list(contract_map.keys()))
+    paperless_billing = st.selectbox("Paperless Billing", list(paperless_billing_map.keys()))
+    payment_method = st.selectbox("Payment Method", list(payment_method_map.keys()))
+    cltv = st.number_input("CLTV", min_value=0.0, max_value=10000.0, value=2000.0)
+
+    # Prepare input data
+    inputs = {
+        "Gender": gender_map[gender],
+        "Senior Citizen": senior_citizen,
+        "Partner": partner_map[partner],
+        "Dependents": dependents_map[dependents],
+        "Tenure Months": tenure,
+        "Phone Service": phone_service_map[phone_service],
+        "Multiple Lines": multiple_lines_map[multiple_lines],
+        "Internet Service": internet_service_map[internet_service],
+        "Online Security": online_security_map[online_security],
+        "Online Backup": online_backup_map[online_backup],
+        "Device Protection": device_protection_map[device_protection],
+        "Tech Support": tech_support_map[tech_support],
+        "Streaming TV": streaming_tv_map[streaming_tv],
+        "Contract": contract_map[contract],
+        "Paperless Billing": paperless_billing_map[paperless_billing],
+        "Payment Method": payment_method_map[payment_method],
+        "CLTV": cltv
+    }
+
+    if st.button(" Predict Churn"):
+        X_new = pd.DataFrame([inputs])
+        X_new_scaled = scaler.transform(X_new)
+
+        churn_prob = model.predict_proba(X_new_scaled)[:, 1][0]
+        prediction = 1 if churn_prob >= best_threshold else 0
+
+        st.subheader(" Prediction Results")
+        st.write(f"**Predicted Churn Probability:** {churn_prob:.4f}")
+        st.write(f"**Optimal Threshold Used:** {best_threshold:.4f}")
+
+        if prediction == 1:
+            st.error(" The customer is **LIKELY TO CHURN**.")
+        else:
+            st.success(" The customer is **NOT likely to churn**.")
+
+
 # CUSTOMER CHURN ANALYSIS (Power BI)
-# -------------------------------
 elif page == "Customer Churn Analysis":
     st.title("Customer Churn Analysis Dashboard")
     report_url = "https://app.powerbi.com/reportEmbed?reportId=2645a142-ecba-422a-9089-842afe1a29ee&autoAuth=true"
     st.components.v1.iframe(report_url, width=1200, height=800)
 
 
-# -------------------------------
 # SUMMARIZATION
-# -------------------------------
+
 elif page == "Summarization":
     st.title("Summarization of Findings")
 
